@@ -7,6 +7,7 @@ import com.geekbrains.geekmarketorders.view.ApiOrderView;
 import com.geekbrains.geekmarketorders.view.ApiOrdersDetailsView;
 import com.geekbrains.geekmarketorders.view.ApiProductView;
 import com.geekbrains.geekmarketorders.view.ApiProductsToOrderView;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,9 +23,9 @@ public class OrderController {
     private final OrderRepository orderRepository;
 
     @PostMapping
-    public String createOrder(@RequestBody ApiProductsToOrderView body) {
+    public ApiOrderView createOrder(@RequestBody List<ApiProductView> body) {
         GeekOrder order = new GeekOrder();
-        order.setItems(body.getProducts().stream().map(
+        order.setItems(body.stream().map(
                 p -> OrderItem.builder()
                         .name(p.getTitle())
                         .itemPrice(p.getPrice())
@@ -32,12 +33,23 @@ public class OrderController {
                         .order(order)
                         .build()
         ).collect(Collectors.toList()));
-        Double price = body.getProducts().stream()
+        Double price = body.stream()
                 .map(ApiProductView::getPrice)
                 .reduce(0., Double::sum);
         order.setPrice(price);
-        GeekOrder savedOrder = orderRepository.save(order);
-        return "http://localhost:8191/api/v1/orders/" + savedOrder.getId();
+        GeekOrder o = orderRepository.save(order);
+        return ApiOrderView.builder()
+                .orderId(o.getId())
+                .summaryPrice(o.getPrice())
+                .details(o.getItems()
+                        .stream()
+                        .map(i -> ApiOrdersDetailsView.builder()
+                                .productName(i.getName())
+                                .count(i.getCount())
+                                .price(i.getItemPrice())
+                                .build())
+                        .collect(Collectors.toList()))
+                .build();
     }
 
     @GetMapping("/{orderId}")
@@ -63,6 +75,27 @@ public class OrderController {
                 .summaryPrice(geekOrder.getPrice())
                 .details(details)
                 .build();
+    }
+
+    @GetMapping
+    public List<ApiOrderView> getOrders() {
+        return orderRepository.findAll()
+                .stream()
+                .map(
+                        order -> ApiOrderView.builder()
+                                .orderId(order.getId())
+                                .summaryPrice(order.getPrice())
+                                .details(order.getItems()
+                                        .stream()
+                                        .map(i -> ApiOrdersDetailsView.builder()
+                                                .productName(i.getName())
+                                                .count(i.getCount())
+                                                .price(i.getItemPrice())
+                                                .build())
+                                        .collect(Collectors.toList()))
+                                .build()
+                )
+                .collect(Collectors.toList());
     }
 
 }
