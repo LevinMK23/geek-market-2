@@ -1,0 +1,174 @@
+openapi: 3.0.3
+info:
+  title: Swagger OrderApi
+  version: 1.0.0
+servers:
+  - url: http://localhost:8191/
+paths:
+  /orders:
+    get:
+      summary: List of orders
+      operationId: getOrderList
+      tags:
+        - order
+      parameters:
+        - name: page
+          in: query
+          description: Page number
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 1
+        - name: pageSize
+          in: query
+          description: Orders in one page
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+      responses:
+        '200':
+          description: A paged array of orders
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiOrderList"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      summary: Create an order
+      operationId: createOrder
+      tags:
+        - order
+      requestBody:
+        description: Created order body
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiOrder'
+      responses:
+        '200':
+          description: Created order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiOrder"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /orders/{orderId}:
+    get:
+      summary: Info for a specific order
+      operationId: getOrderById
+      tags:
+        - order
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          description: Order id
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiOrder"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    put:
+      summary: Update order
+      operationId: updateOrder
+      tags:
+        - order
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          description: Order id
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Updated order body
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiOrder'
+      responses:
+        '200':
+          description: Updated order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiOrder"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+components:
+  schemas:
+    ApiOrderList:
+      type: array
+      items:
+        $ref: '#/components/schemas/ApiOrder'
+    ApiOrder:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        price:
+          type: number
+          format: double
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApiOrderItem'
+
+    ApiOrderItem:
+      type: object
+      properties:
+        productName:
+          type: string
+        price:
+          type: number
+          format: double
+        count:
+          type: integer
+          format: int32
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+  

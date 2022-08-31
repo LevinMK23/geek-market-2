@@ -5,8 +5,12 @@
       <configuration>
         <webroots />
         <sourceRoots>
+          <root url="file://$MODULE_DIR$/openapi" />
           <root url="file://$MODULE_DIR$/src/main/java" />
           <root url="file://$MODULE_DIR$/src/main/resources" />
+          <root url="file://$MODULE_DIR$/target/generated-sources/.openapi-generator" />
+          <root url="file://$MODULE_DIR$/target/generated-sources/src/main/java" />
+          <root url="file://$MODULE_DIR$/target/generated-sources/src/test/java" />
         </sourceRoots>
       </configuration>
     </facet>
